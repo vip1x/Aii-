@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>हिंदी AI Assistant</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background: #1e88e5;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      max-width: 80%;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    .user {
+      align-self: flex-end;
+      background: #c8e6c9;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #e0e0e0;
+    }
+    .input-box {
+      display: flex;
+      padding: 10px;
+      background: white;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-left: 10px;
+      background: #1e88e5;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>🤖 हिंदी AI Assistant</header>
+  <div id="chat"></div>
+  <div class="input-box">
+    <input type="text" id="userInput" placeholder="यहाँ हिंदी में सवाल पूछें..." />
+    <button onclick="sendMessage()">भेजें</button>
+  </div>
+
+  <script>
+    const API_KEY = "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";
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (text === "") return;
+
+      addMessage(text, "user");
+      input.value = "";
+
+      const response = await getGPTReply(text);
+      addMessage(response, "bot");
+    }
+
+    function addMessage(msg, type) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = `message ${type}`;
+      div.innerText = msg;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function getGPTReply(message) {
+      try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + API_KEY
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "तुम एक सहायक हो जो हमेशा हिंदी में ही जवाब देता है।" },
+              { role: "user", content: message }
+            ]
+          })
+        });
+
+        const data = await res.json();
+        return data.choices[0].message.content.trim();
+      } catch (e) {
+        return "⚠️ कुछ गड़बड़ हो गई। API key या इंटरनेट कनेक्शन जांचें।";
+      }
+    }
+  </script>
+
+</body>
+</html>
